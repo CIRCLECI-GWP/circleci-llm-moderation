@@ -1,0 +1,26 @@
+version: 2.1
+
+workflows:
+  build_flagged_files:
+    jobs:
+      - check_flagged_files:
+          filters:
+            branches:
+              only: main
+
+jobs:
+  check_flagged_files:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          name: Detect flagged files
+          command: |
+            FILE_COUNT=$(ls flagged_event_*.txt 2>/dev/null | wc -l)
+            if [ "$FILE_COUNT" -gt 0 ]; then
+              echo "Found $FILE_COUNT flagged_event_*.txt files - failing build!"
+              exit 1
+            else
+              echo "No flagged files. Passing build."
+              exit 0
